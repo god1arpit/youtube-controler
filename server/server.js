@@ -32,15 +32,37 @@ const socketHandler = require("./sockets/socketHandler");
 const searchYouTube = require("./utils/youtubeSearch");
 
 const app = express();
-app.use(cors());
+const clientOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    // Requests without an Origin header include local health checks and curl.
+    if (!origin || clientOrigins.length === 0 || clientOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Origin not allowed by CORS"));
+  },
+  methods: ["GET", "POST"],
+};
+
+app.use(cors(corsOptions));
 // Needed when the app is deployed behind an HTTPS reverse proxy.
 app.set("trust proxy", 1);
 
+app.get("/", (req, res) => {
+  res.json({ status: "ok", service: "YouTube Controller API" });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
+  cors: corsOptions,
 });
 
 // OAuth Session Cache: maps sessionId -> { accessToken, refreshToken, expiresAt, name, picture }
@@ -466,6 +488,8 @@ app.get("/api/youtube/liked", async (req, res) => {
 
 socketHandler(io);
 
-server.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
