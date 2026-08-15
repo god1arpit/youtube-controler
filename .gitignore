@@ -1,0 +1,6 @@
+server/.env
+client/.env
+client/.env.*
+!client/.env.example
+node_modules/
+dist/
