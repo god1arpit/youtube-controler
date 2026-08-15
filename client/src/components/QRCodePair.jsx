@@ -10,7 +10,7 @@ function QRCodePair({ sessionId }) {
   );
 
   useEffect(() => {
-    // Local development only
+    // Only fetch the laptop's LAN IP during local development.
     if (!isLocalhost) return;
 
     fetch(`${API_BASE_URL}/api/server-ip`)
@@ -34,7 +34,7 @@ function QRCodePair({ sessionId }) {
 
   if (isLocalhost && serverIp) {
     // Local development:
-    // Phone and laptop must be on the same Wi-Fi.
+    // Phone and laptop should be connected to the same Wi-Fi.
     const protocol = window.location.protocol;
     const port = window.location.port || "5173";
 
@@ -142,9 +142,6 @@ function QRCodePair({ sessionId }) {
       </div>
     </div>
   );
-}
-
-export default QRCodePair;
 }
 
 export default QRCodePair;
